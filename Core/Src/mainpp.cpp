@@ -30,6 +30,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
   nh.getHardware()->reset_rbuf();
 }
+//Komentarz do Hello World
 /*
 void setup(void)
 {
@@ -47,6 +48,7 @@ void loop(void)
 
   HAL_Delay(1000);
 }
+
 */
 extern I2C_HandleTypeDef hi2c1;
 
