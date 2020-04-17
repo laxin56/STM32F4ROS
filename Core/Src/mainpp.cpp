@@ -125,7 +125,7 @@ void loop()
 	Xaxis_g = ((float) Xaxis * LSM303_ACC_RESOLUTION) / (float) INT16_MAX;
 	Yaxis_g = ((float) Yaxis * LSM303_ACC_RESOLUTION) / (float) INT16_MAX;
 	Zaxis_g = ((float) Zaxis * LSM303_ACC_RESOLUTION) / (float) INT16_MAX;
-
+//Wysyłanie danych do ROS Serial
 	axis[0] = Xaxis_g;
 	axis[1] = Yaxis_g;
 	axis[2] = Zaxis_g;
@@ -139,6 +139,8 @@ void loop()
 	imu.linear_acceleration.z = axis[2];
 	pub_imu.publish(&imu);
 	nh.spinOnce();
+	
+	//maksymalna wartosć przy obecnym Baud Rate
 	HAL_Delay(400);
 
 }
