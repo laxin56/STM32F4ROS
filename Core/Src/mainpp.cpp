@@ -89,11 +89,14 @@ float Yaxis_g = 0; // Zawiera przyspieszenie w osi Y przekstalcone na jednostke 
 float Zaxis_g = 0; // Zawiera przyspieszenie w osi Z przekstalcone na jednostke fizyczna [g]
 float axis[2];
 
+//Zmienne do jeżdzenia w koło 
 //double x = 1.0;
 //double y = 0.0;
 //double theta = 1.57;
 
+
 //char base_link[] = "/base_link";
+
 char odom[] = "/imu";
 
 void setup()
