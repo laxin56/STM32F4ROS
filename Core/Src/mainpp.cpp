@@ -16,6 +16,7 @@
 
 ros::NodeHandle nh;
 sensor_msgs::Imu imu;
+//dodanie węzła publikującego wiadomości przyspieszenia
 ros::Publisher pub_imu("imu", &imu);
 
 /*
