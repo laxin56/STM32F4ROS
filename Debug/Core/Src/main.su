@@ -1,0 +1,7 @@
+main.cpp:103:5:int main()	8	static
+main.cpp:153:6:void SystemClock_Config()	88	static
+main.cpp:197:13:void MX_I2C1_Init()	8	static
+main.cpp:231:13:void MX_USART2_UART_Init()	8	static
+main.cpp:262:13:void MX_DMA_Init()	16	static
+main.cpp:283:13:void MX_GPIO_Init()	40	static
+main.cpp:312:6:void Error_Handler()	4	static

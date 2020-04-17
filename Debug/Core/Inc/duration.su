@@ -1,0 +1,4 @@
+duration.cpp:42:6:void ros::normalizeSecNSecSigned(int32_t&, int32_t&)	24	static
+duration.cpp:61:11:ros::Duration& ros::Duration::operator+=(const ros::Duration&)	16	static
+duration.cpp:69:11:ros::Duration& ros::Duration::operator-=(const ros::Duration&)	16	static
+duration.cpp:77:11:ros::Duration& ros::Duration::operator*=(double)	32	static
