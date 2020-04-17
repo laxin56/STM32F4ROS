@@ -51,8 +51,10 @@ void loop(void)
 }
 
 */
+//uchwyt do I2C
 extern I2C_HandleTypeDef hi2c1;
 
+//Dodanie rejestrów
 #define LSM303_ACC_ADDRESS (0x19 << 1) // adres akcelerometru: 0011 001x
 #define LSM303_ACC_CTRL_REG1_A 0x20 // rejestr ustawien 1
 #define LSM303_ACC_CTRL_REG3_A 0x22 // rejestr ustawien 3
@@ -70,16 +72,11 @@ extern I2C_HandleTypeDef hi2c1;
 #define LSM303_ACC_X_L_A_MULTI_READ (LSM303_ACC_X_L_A | 0x80)
 
 // Maski bitowe
-// CTRL_REG1_A = [ODR3][ODR2][ODR1][ODR0][LPEN][ZEN][YEN][XEN]
+
 #define LSM303_ACC_XYZ_ENABLE 0x07 // 0000 0111
 #define LSM303_ACC_100HZ 0x50 //0101 0000
 #define LSM303_ACC_1HZ 0x10 //0001 0000
 
-// CTRL_REG3_A = [CLICK][AOI1][AOI2][DRDY_1][DRDY_2][WTM][OVERRUN][---]
-#define LSM303_ACC_I1_DRDY1 0x10 //0001 0000
-#define LSM303_ACC_I1_DRDY2 0x08 //0000 1000
-
-#define LSM303_ACC_RESOLUTION 2.0 // Maksymalna wartosc mierzalnego przyspieszenia [g]
 
 // Zmienne
 uint8_t Data[6]; // Zmienna do bezposredniego odczytu danych z akcelerometru
