@@ -23,9 +23,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 #include "mainpp.h"
-#include <limits.h>
-#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,40 +44,16 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
+SPI_HandleTypeDef hspi1;
+
+TIM_HandleTypeDef htim10;
+
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
-#define LSM303_ACC_ADDRESS (0x19 << 1) // adres akcelerometru: 0011 001x
-#define LSM303_ACC_CTRL_REG1_A 0x20 // rejestr ustawien 1
-#define LSM303_ACC_CTRL_REG3_A 0x22 // rejestr ustawien 3
-#define LSM303_ACC_Z_H_A 0x2D // wyzszy bajt danych osi Z
-#define LSM303_ACC_Z_L_A 0x2C // nizszy bajt danych osi Z
-#define LSM303_ACC_X_L_A 0x28 // nizszy bajt danych osi X
-// mlodszy bajt danych osi Z z najstarszym bitem ustawionym na 1 w celu
-// wymuszenia autoinkrementacji adresow rejestru w urzadzeniu docelowym
-// (zeby moc odczytac wiecej danych na raz)
-#define LSM303_ACC_Z_L_A_MULTI_READ (LSM303_ACC_Z_L_A | 0x80)
-
-// mlodszy bajt danych osi X z najstarszym bitem ustawionym na 1 w celu
-// wymuszenia autoinkrementacji adresow rejestru w urzadzeniu docelowym
-// (zeby moc odczytac wiecej danych na raz)
-#define LSM303_ACC_X_L_A_MULTI_READ (LSM303_ACC_X_L_A | 0x80)
-
-// Maski bitowe
-// CTRL_REG1_A = [ODR3][ODR2][ODR1][ODR0][LPEN][ZEN][YEN][XEN]
-#define LSM303_ACC_Z_ENABLE 0x04 // 0000 0100
-#define LSM303_ACC_XYZ_ENABLE 0x07 // 0000 0111
-#define LSM303_ACC_100HZ 0x50 //0101 0000
-#define LSM303_ACC_1HZ 0x10 //0001 0000
-
-// CTRL_REG3_A = [CLICK][AOI1][AOI2][DRDY_1][DRDY_2][WTM][OVERRUN][---]
-#define LSM303_ACC_I1_DRDY1 0x10 //0001 0000
-#define LSM303_ACC_I1_DRDY2 0x08 //0000 1000
-
-#define LSM303_ACC_RESOLUTION 2.0 // Maksymalna wartosc mierzalnego przyspieszenia [g]
-//uint8_t Data[6]; // Zmienna do bezposredniego odczytu danych z akcelerometru
+int licznik = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -87,6 +62,8 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_TIM10_Init(void);
+static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -127,21 +104,33 @@ int main(void)
   MX_DMA_Init();
   MX_USART2_UART_Init();
   MX_I2C1_Init();
+  MX_TIM10_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
+  setup();
+  initialize();
 
-setup();
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		// Pobranie 6 bajtow danych zawierajacych przyspieszenia w 3 osiach
+	  Napraw_Blad(30);
+	  Calculate();
+	  ++licznik;
+	  if(licznik == 19){
+		licznik = 0;
+		Wez_pozycje();
+		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
+	  }
+	  HAL_Delay(10);
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	 loop();
   }
   /* USER CODE END 3 */
 }
@@ -167,7 +156,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 100;
+  RCC_OscInitStruct.PLL.PLLN = 90;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
@@ -183,7 +172,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
@@ -220,6 +209,75 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief SPI1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI1_Init(void)
+{
+
+  /* USER CODE BEGIN SPI1_Init 0 */
+
+  /* USER CODE END SPI1_Init 0 */
+
+  /* USER CODE BEGIN SPI1_Init 1 */
+
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI1_Init 2 */
+
+  /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
+  * @brief TIM10 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM10_Init(void)
+{
+
+  /* USER CODE BEGIN TIM10_Init 0 */
+
+  /* USER CODE END TIM10_Init 0 */
+
+  /* USER CODE BEGIN TIM10_Init 1 */
+
+  /* USER CODE END TIM10_Init 1 */
+  htim10.Instance = TIM10;
+  htim10.Init.Prescaler = 49;
+  htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim10.Init.Period = 17999;
+  htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim10.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim10) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM10_Init 2 */
+
+  /* USER CODE END TIM10_Init 2 */
 
 }
 
@@ -285,12 +343,23 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : CS_Pin */
+  GPIO_InitStruct.Pin = CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(CS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LED_Pin */
   GPIO_InitStruct.Pin = LED_Pin;
