@@ -12,8 +12,21 @@
  extern "C" {
 #endif
 
-void setup(void);
-void loop(void);
+
+void setup(void);    // inicjalizacja
+
+void Get_data(void); //pobieranie danych z akcelerometru
+
+void Get_gyro(); //Pobieranie danych z zyroskopu
+
+void initialize(void);
+
+void Calculate(void); //obliczanie pozycji
+
+void Napraw_Blad(int); //Funkcja prostujaca blad calkowania
+
+void Wez_pozycje(void);
+
 
 #ifdef __cplusplus
 }

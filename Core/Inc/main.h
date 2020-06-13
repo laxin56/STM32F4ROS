@@ -48,6 +48,7 @@ extern "C" {
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
 
+
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
@@ -58,6 +59,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define CS_Pin GPIO_PIN_3
+#define CS_GPIO_Port GPIOE
 #define LED_Pin GPIO_PIN_15
 #define LED_GPIO_Port GPIOD
 /* USER CODE BEGIN Private defines */
